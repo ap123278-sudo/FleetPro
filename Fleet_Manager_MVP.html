@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#12304a">
+<title>Fleet Manager — MVP</title>
+<style>
+:root{--navy:#12304a;--blue:#1769aa;--bg:#f3f6fa;--card:#fff;--text:#172536;--muted:#66788a;--line:#dfe6ee;--green:#16845b;--red:#c43b45;--amber:#a96500}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(120deg,#12304a,#1769aa);color:#fff;padding:20px 16px 16px;position:sticky;top:0;z-index:5;box-shadow:0 3px 12px #102b4420}
+.header-row{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1100px;margin:auto}h1{font-size:22px;margin:0}header p{margin:3px 0 0;color:#d7e7f7;font-size:12px}
+.badge{font-size:11px;border:1px solid #ffffff55;border-radius:99px;padding:5px 9px;white-space:nowrap}
+nav{display:flex;gap:6px;max-width:1100px;margin:14px auto 0;overflow-x:auto;padding-bottom:2px}
+nav button{background:#ffffff18;border:1px solid #ffffff30;color:#fff;border-radius:9px;padding:9px 12px;white-space:nowrap;font-weight:600;cursor:pointer}
+nav button.active{background:#fff;color:var(--navy)}
+main{max-width:1100px;margin:18px auto;padding:0 14px 34px}
+.panel{display:none}.panel.active{display:block}
+.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 14px}
+h2{font-size:20px;margin:0}h3{font-size:16px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 7px #16324b08}
+.metric .label{color:var(--muted);font-size:12px}.metric .value{font-size:22px;font-weight:750;margin-top:5px;overflow-wrap:anywhere}.metric .sub{color:var(--muted);font-size:11px;margin-top:4px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+button,.btn{border:0;border-radius:9px;padding:10px 13px;background:var(--blue);color:white;font-weight:650;cursor:pointer;font-size:14px}
+button.secondary,.btn.secondary{background:#e9f0f7;color:var(--navy);border:1px solid #d5e0eb}
+button.danger{background:#fff0f0;color:var(--red);border:1px solid #ffd4d4}
+form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+label{display:block;font-size:12px;color:var(--muted);font-weight:650;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid #cfd9e4;border-radius:9px;background:#fff;color:var(--text);font:inherit;min-width:0}
+input:focus,select:focus,textarea:focus{outline:2px solid #9ecdf5;border-color:var(--blue)}
+.full{grid-column:1/-1}.form-actions{display:flex;gap:8px;flex-wrap:wrap}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px;min-width:600px}th,td{text-align:left;padding:10px 9px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);background:#f8fafc}
+.pill{display:inline-block;border-radius:99px;padding:3px 8px;background:#eaf2fa;color:#225d8b;font-size:11px;font-weight:700}
+.positive{color:var(--green)!important}.negative{color:var(--red)!important}.muted{color:var(--muted)}
+.empty{padding:22px;text-align:center;color:var(--muted);border:1px dashed #cbd7e3;border-radius:10px}
+.note{background:#fff8e7;border:1px solid #f4dfab;color:#76500a;border-radius:10px;padding:11px 13px;font-size:12px;margin:12px 0}
+.small{font-size:12px;color:var(--muted)}.actions{display:flex;gap:6px;flex-wrap:wrap}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#152b3d;color:white;padding:12px 16px;border-radius:10px;box-shadow:0 5px 20px #0002;z-index:10;display:none;max-width:90vw}
+.vehicle-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.vehicle-card{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+.vehicle-card h3{margin:6px 0}.vehicle-card .number{font-size:12px;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.vehicle-list{grid-template-columns:repeat(2,minmax(0,1fr))}.two-col{grid-template-columns:1fr}}
+@media(max-width:480px){.grid{gap:8px}.card{padding:12px}.metric .value{font-size:18px}form{grid-template-columns:1fr}.full{grid-column:auto}.vehicle-list{grid-template-columns:1fr}h1{font-size:19px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="header-row"><div><h1>🚚 Fleet Manager</h1><p>Vehicle • Income • Expense • Loan • Profit</p></div><span class="badge">MVP 0.1 · Offline</span></div>
+ <nav>
+  <button class="active" data-tab="dashboard">डैशबोर्ड</button>
+  <button data-tab="vehicles">मेरी गाड़ियाँ</button>
+  <button data-tab="entry">कमाई / खर्च</button>
+  <button data-tab="loans">लोन रिकॉर्ड</button>
+  <button data-tab="reports">रिपोर्ट</button>
+  <button data-tab="backup">बैकअप</button>
+ </nav>
+</header>
+<main>
+<section id="dashboard" class="panel active">
+ <div class="section-head"><h2>डैशबोर्ड</h2><button onclick="showTab('entry')">＋ एंट्री जोड़ें</button></div>
+ <div class="grid" id="metrics"></div>
+ <div class="two-col">
+  <div class="card"><h3>हाल की एंट्री</h3><div id="recent"></div></div>
+  <div class="card"><h3>गाड़ी के अनुसार सारांश</h3><div id="vehicleSummary"></div></div>
+ </div>
+ <div class="note">हिसाब का नियम: डैशबोर्ड का अनुमानित मुनाफा = कमाई − ऑपरेटिंग खर्च − दर्ज ब्याज। लोन की मूल रकम/Principal को मुनाफे का खर्च नहीं माना गया है। खरीद की लागत और नकदी का हिसाब अलग रिपोर्ट में देखें।</div>
+</section>
+<section id="vehicles" class="panel">
+ <div class="section-head"><h2>मेरी गाड़ियाँ</h2><button onclick="toggleForm('vehicleFormWrap')">＋ गाड़ी रजिस्टर करें</button></div>
+ <div class="card" id="vehicleFormWrap" style="display:none;margin-bottom:14px">
+  <h3>नई गाड़ी / मशीन</h3>
+  <form id="vehicleForm">
+   <div><label>गाड़ी का नाम *</label><input name="name" required placeholder="जैसे Truck 1 / JCB 1"></div>
+   <div><label>गाड़ी का प्रकार *</label><select name="type" required><option value="Truck">Truck / ट्रक</option><option value="JCB">JCB / Excavator</option><option value="Pickup">Pickup</option><option value="Van">Van / Delivery</option><option value="Loader">Loader</option><option value="Bus">Bus</option><option value="Car">Car</option><option value="Other">अन्य मशीन / वाहन</option></select></div>
+   <div><label>रजिस्ट्रेशन नंबर</label><input name="reg" placeholder="जैसे UP26BT0000"></div>
+   <div><label>मॉडल / विवरण</label><input name="model" placeholder="कंपनी, मॉडल, क्षमता"></div>
+   <div><label>खरीद की तारीख</label><input name="date" type="date"></div>
+   <div><label>वाहन की बेस कीमत (₹)</label><input name="price" type="number" min="0" step="0.01" value="0"></div>
+   <div><label>डाउन पेमेंट (₹)</label><input name="down" type="number" min="0" step="0.01" value="0"></div>
+   <div><label>लोन मंजूर (₹)</label><input name="loanApproved" type="number" min="0" step="0.01" value="0"></div>
+   <div><label>लोन वास्तव में मिला (₹)</label><input name="loanDisbursed" type="number" min="0" step="0.01" value="0"></div>
+   <div><label>मासिक EMI (₹)</label><input name="emi" type="number" min="0" step="0.01" value="0"></div>
+   <div><label>लोन ब्याज दर (% सालाना, वैकल्पिक)</label><input name="rate" type="number" min="0" step="0.01" value="0"></div>
+   <div><label>लोन अवधि (महीने)</label><input name="tenure" type="number" min="0" step="1" value="0"></div>
+   <div><label>शुरुआती अन्य खर्च (₹)</label><input name="initial" type="number" min="0" step="0.01" value="0" placeholder="Insurance, RTO, body, GPS आदि"></div>
+   <div><label>शुरुआती खर्च का विवरण</label><input name="initialNote" placeholder="जैसे container body, insurance"></div>
+   <div class="full"><div class="form-actions"><button type="submit">गाड़ी सेव करें</button><button type="button" class="secondary" onclick="toggleForm('vehicleFormWrap')">रद्द करें</button></div></div>
+  </form>
+ </div>
+ <div id="vehiclesList" class="vehicle-list"></div>
+</section>
+<section id="entry" class="panel">
+ <div class="section-head"><h2>कमाई / खर्च जोड़ें</h2></div>
+ <div class="card">
+  <form id="entryForm">
+   <div><label>गाड़ी चुनें *</label><select name="vehicleId" id="entryVehicle" required></select></div>
+   <div><label>तारीख *</label><input name="date" type="date" required></div>
+   <div><label>एंट्री का प्रकार *</label><select name="kind" id="entryKind"><option value="income">कमाई / Freight / Job income</option><option value="diesel">डीजल</option><option value="toll">FASTag / Toll</option><option value="driver">ड्राइवर / स्टाफ खर्च</option><option value="maintenance">Maintenance / Repair</option><option value="interest">लोन ब्याज</option><option value="principal">लोन Principal repayment</option><option value="emi">EMI (यदि ब्याज और Principal अलग नहीं पता)</option><option value="other">अन्य खर्च</option><option value="customerPayment">ग्राहक से पेमेंट मिला</option></select></div>
+   <div><label>रकम (₹) *</label><input name="amount" type="number" min="0.01" step="0.01" required></div>
+   <div><label>काम / ट्रिप / पार्टी</label><input name="reference" placeholder="जैसे Sitapur to Yamunanagar"></div>
+   <div><label>किलोमीटर (यदि लागू हो)</label><input name="km" type="number" min="0" step="0.1" value="0"></div>
+   <div><label>डीजल लीटर (यदि लागू हो)</label><input name="litres" type="number" min="0" step="0.1" value="0"></div>
+   <div><label>ग्राहक से कुल तय रकम (सिर्फ कमाई एंट्री पर)</label><input name="agreed" type="number" min="0" step="0.01" value="0"></div>
+   <div class="full"><label>नोट</label><textarea name="note" rows="2" placeholder="अतिरिक्त जानकारी"></textarea></div>
+   <div class="full form-actions"><button type="submit">एंट्री सेव करें</button><button type="reset" class="secondary">फॉर्म साफ करें</button></div>
+  </form>
+ </div>
+ <div class="note">EMI अगर एक ही रकम में दर्ज कर रहे हैं तो प्रकार “EMI” चुनें। इससे पूरा EMI नकदी खर्च में आएगा, लेकिन मुनाफे में पूरा EMI खर्च नहीं घटेगा; मुनाफे के लिए ब्याज वाला हिस्सा अलग दर्ज करना सबसे सही है।</div>
+ <div class="card"><h3>एंट्री रिकॉर्ड</h3><div class="table-wrap" id="entriesTable"></div></div>
+</section>
+<section id="loans" class="panel">
+ <div class="section-head"><h2>लोन रिकॉर्ड</h2></div>
+ <div class="card"><div id="loanList"></div></div>
+ <div class="note">MVP में लोन की बाकी रकम एक अनुमान है: वास्तव में चुकाया गया Principal घटाया जाता है। अगर EMI की पूरी रकम दर्ज की है और Principal/ब्याज अलग नहीं किया, तो लोन बैलेंस सही रखने के लिए अलग से Principal repayment एंट्री दर्ज करें। बैंक का स्टेटमेंट अंतिम प्रमाण है।</div>
+</section>
+<section id="reports" class="panel">
+ <div class="section-head"><h2>रिपोर्ट</h2><div class="actions"><select id="reportPeriod" style="width:auto"><option value="month">इस महीने</option><option value="year">इस साल</option><option value="all">सभी रिकॉर्ड</option></select><button onclick="renderReports()">रिपोर्ट दिखाएँ</button></div></div>
+ <div class="grid" id="reportMetrics"></div>
+ <div class="card" style="margin-top:14px"><h3>प्रकार के अनुसार हिसाब</h3><div id="reportBreakdown"></div></div>
+ <div class="card" style="margin-top:14px"><h3>गाड़ी खरीद और शुरुआती निवेश</h3><div id="acquisitionReport"></div></div>
+</section>
+<section id="backup" class="panel">
+ <div class="section-head"><h2>बैकअप और डेटा</h2></div>
+ <div class="card">
+  <h3>डेटा सुरक्षित रखें</h3><p>इस MVP में रिकॉर्ड इसी ब्राउज़र/डिवाइस पर सेव होते हैं। ऐप का डेटा मिटाने या फोन बदलने से पहले बैकअप डाउनलोड करें। यह अभी अपने-आप क्लाउड पर सिंक नहीं करता।</p>
+  <div class="actions"><button onclick="exportData()">बैकअप डाउनलोड करें</button><label class="btn secondary" style="display:inline-flex;align-items:center;cursor:pointer">बैकअप वापस लाएँ<input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importData(event)"></label></div>
+  <hr><h3>डेटा हटाना</h3><p class="small">यह इसी ब्राउज़र में सेव की गई गाड़ियाँ और एंट्री मिटा देगा। पहले बैकअप बना लें।</p><button class="danger" onclick="clearData()">सारा डेटा मिटाएँ</button>
+ </div>
+</section>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const KEY='fleetManagerMVP_v01';
+const defaults={vehicles:[],entries:[]};
+let db=loadDB();
+function loadDB(){try{return Object.assign({vehicles:[],entries:[]},JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){return {vehicles:[],entries:[]}}}
+function saveDB(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function money(n){return '₹'+(Number(n)||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
+function fmtDate(d){if(!d)return '—';try{return new Date(d+'T00:00:00').toLocaleDateString('en-IN')}catch(e){return d}}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(s){let t=document.getElementById('toast');t.textContent=s;t.style.display='block';setTimeout(()=>t.style.display='none',2500)}
+function showTab(id){document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));if(id==='reports')renderReports();window.scrollTo({top:0,behavior:'smooth'})}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function toggleForm(id){let el=document.getElementById(id);el.style.display=el.style.display==='none'?'block':'none'}
+function vehicleName(id){let v=db.vehicles.find(v=>v.id===id);return v?(v.name+(v.reg?' · '+v.reg:'')):'गाड़ी हटाई गई'}
+function sum(arr,fn){return arr.reduce((a,x)=>a+(fn(x)||0),0)}
+function entryKindName(k){return ({income:'कमाई',diesel:'डीजल',toll:'FASTag / Toll',driver:'ड्राइवर / स्टाफ',maintenance:'Maintenance',interest:'लोन ब्याज',principal:'Principal repayment',emi:'EMI',other:'अन्य खर्च',customerPayment:'ग्राहक पेमेंट'})[k]||k}
+function isOperatingExpense(k){return ['diesel','toll','driver','maintenance','other'].includes(k)}
+function cashOut(e){return ['diesel','toll','driver','maintenance','interest','principal','emi','other'].includes(e.kind)}
+function totalIncome(entries){return sum(entries.filter(e=>['income','customerPayment'].includes(e.kind)),e=>+e.amount)}
+function operatingExpense(entries){return sum(entries.filter(e=>isOperatingExpense(e.kind)),e=>+e.amount)}
+function interestExpense(entries){return sum(entries.filter(e=>e.kind==='interest'),e=>+e.amount)}
+function profit(entries){return totalIncome(entries)-operatingExpense(entries)-interestExpense(entries)}
+function acquisition(v){return (+v.price||0)+(+v.initial||0)}
+function cashInvested(v){return acquisition(v)-(+v.loanDisbursed||0)}
+document.getElementById('vehicleForm').addEventListener('submit',e=>{
+ e.preventDefault();let f=new FormData(e.target),v=Object.fromEntries(f.entries());
+ ['price','down','loanApproved','loanDisbursed','emi','rate','tenure','initial'].forEach(k=>v[k]=+v[k]||0);
+ v.id=uid();db.vehicles.push(v);saveDB();e.target.reset();document.querySelector('#vehicleForm [name=price]').value=0;document.querySelector('#vehicleForm [name=down]').value=0;document.querySelector('#vehicleForm [name=loanApproved]').value=0;document.querySelector('#vehicleForm [name=loanDisbursed]').value=0;document.querySelector('#vehicleForm [name=emi]').value=0;document.querySelector('#vehicleForm [name=rate]').value=0;document.querySelector('#vehicleForm [name=tenure]').value=0;document.querySelector('#vehicleForm [name=initial]').value=0;document.getElementById('vehicleFormWrap').style.display='none';toast('गाड़ी सेव हो गई');
+});
+document.getElementById('entryForm').addEventListener('submit',e=>{
+ e.preventDefault();if(!db.vehicles.length){toast('पहले गाड़ी रजिस्टर करें');showTab('vehicles');return}
+ let f=Object.fromEntries(new FormData(e.target).entries());f.id=uid();f.amount=+f.amount||0;f.km=+f.km||0;f.litres=+f.litres||0;f.agreed=+f.agreed||0;
+ db.entries.push(f);saveDB();e.target.reset();document.querySelector('#entryForm [name=date]').value=new Date().toISOString().slice(0,10);toast('एंट्री सेव हो गई');
+});
+function delEntry(id){if(confirm('यह एंट्री हटाएँ?')){db.entries=db.entries.filter(e=>e.id!==id);saveDB()}}
+function delVehicle(id){let v=db.vehicles.find(x=>x.id===id);if(!confirm('इस गाड़ी को हटाएँ? इसकी एंट्री रिकॉर्ड में रहेंगी, लेकिन गाड़ी हटाई गई दिखेगी।'))return;db.vehicles=db.vehicles.filter(x=>x.id!==id);saveDB()}
+function renderVehicleSelect(){let s=document.getElementById('entryVehicle'),old=s.value;s.innerHTML=db.vehicles.map(v=>`<option value="${v.id}">${esc(v.name)}${v.reg?' · '+esc(v.reg):''}</option>`).join('');if(old&&db.vehicles.some(v=>v.id===old))s.value=old;if(!db.vehicles.length)s.innerHTML='<option value="">पहले गाड़ी रजिस्टर करें</option>'}
+function renderVehicles(){let el=document.getElementById('vehiclesList');if(!db.vehicles.length){el.innerHTML='<div class="empty">अभी कोई गाड़ी नहीं है। “गाड़ी रजिस्टर करें” से शुरुआत करें।</div>';return}
+ el.innerHTML=db.vehicles.map(v=>{let es=db.entries.filter(e=>e.vehicleId===v.id);return `<div class="vehicle-card"><span class="pill">${esc(v.type)}</span><h3>${esc(v.name)}</h3><div class="number">${esc(v.reg||'नंबर नहीं दिया')} ${v.model?'· '+esc(v.model):''}</div><hr><div class="small">खरीद + शुरुआती खर्च</div><b>${money(acquisition(v))}</b><div class="small" style="margin-top:8px">लोन मिला / मंजूर</div><b>${money(v.loanDisbursed)} / ${money(v.loanApproved)}</b><div class="small" style="margin-top:8px">रिकॉर्डेड मुनाफा</div><b class="${profit(es)>=0?'positive':'negative'}">${money(profit(es))}</b><div class="actions" style="margin-top:12px"><button class="secondary" onclick="quickEntry('${v.id}')">एंट्री जोड़ें</button><button class="danger" onclick="delVehicle('${v.id}')">हटाएँ</button></div></div>`}).join('')
+}
+function quickEntry(id){showTab('entry');document.getElementById('entryVehicle').value=id}
+function renderEntries(){let el=document.getElementById('entriesTable');let es=[...db.entries].sort((a,b)=>(b.date||'').localeCompare(a.date||''));if(!es.length){el.innerHTML='<div class="empty">अभी कोई एंट्री नहीं है।</div>';return}
+ el.innerHTML=`<table><thead><tr><th>तारीख</th><th>गाड़ी</th><th>प्रकार</th><th>विवरण</th><th>रकम</th><th></th></tr></thead><tbody>${es.map(e=>`<tr><td>${fmtDate(e.date)}</td><td>${esc(vehicleName(e.vehicleId))}</td><td>${esc(entryKindName(e.kind))}</td><td>${esc(e.reference||e.note||'—')}${e.km?'<br><span class="small">'+e.km+' km</span>':''}${e.litres?'<br><span class="small">'+e.litres+' L</span>':''}</td><td class="${['income','customerPayment'].includes(e.kind)?'positive':cashOut(e)?'negative':''}">${money(e.amount)}</td><td><button class="danger" onclick="delEntry('${e.id}')">हटाएँ</button></td></tr>`).join('')}</tbody></table>`
+}
+function renderDashboard(){let es=db.entries;let inc=totalIncome(es),op=operatingExpense(es),intr=interestExpense(es),pr=profit(es),cashOutTotal=sum(es.filter(cashOut),e=>+e.amount),asset=sum(db.vehicles,acquisition),loan=sum(db.vehicles,v=>+v.loanDisbursed||0);
+ let metrics=[['कुल कमाई',inc,'सभी दर्ज आय'],['ऑपरेटिंग खर्च',op,'डीजल, टोल, ड्राइवर, मरम्मत'],['अनुमानित मुनाफा',pr,'कमाई − ऑपरेटिंग खर्च − दर्ज ब्याज'],['वाहन खरीद + शुरुआती खर्च',asset,'गाड़ियों में दर्ज राशि'],['लोन वास्तव में मिला',loan,'सभी गाड़ियों का कुल'],['रिकॉर्डेड नकदी भुगतान',cashOutTotal,'इसमें Principal/EMI भी हो सकते हैं'],['कुल गाड़ियाँ',db.vehicles.length,'रजिस्टर किए गए वाहन'],['दर्ज ब्याज',intr,'मुनाफे में घटाया गया ब्याज']];
+ document.getElementById('metrics').innerHTML=metrics.map((m,i)=>`<div class="card metric"><div class="label">${m[0]}</div><div class="value ${i===2?(pr>=0?'positive':'negative'):''}">${i===6?m[1]:money(m[1])}</div><div class="sub">${m[2]}</div></div>`).join('');
+ let recent=[...es].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);document.getElementById('recent').innerHTML=recent.length?recent.map(e=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)"><div><b>${esc(entryKindName(e.kind))}</b><div class="small">${fmtDate(e.date)} · ${esc(vehicleName(e.vehicleId))}</div></div><b class="${['income','customerPayment'].includes(e.kind)?'positive':'negative'}">${money(e.amount)}</b></div>`).join(''):'<div class="empty">अभी कोई रिकॉर्ड नहीं।</div>';
+ document.getElementById('vehicleSummary').innerHTML=db.vehicles.length?db.vehicles.map(v=>{let ve=es.filter(e=>e.vehicleId===v.id);return `<div style="padding:9px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px"><div><b>${esc(v.name)}</b><div class="small">${esc(v.type)} · ${ve.length} एंट्री</div></div><b class="${profit(ve)>=0?'positive':'negative'}">${money(profit(ve))}</b></div>`}).join(''):'<div class="empty">पहले गाड़ी रजिस्टर करें।</div>'
+}
+function renderLoans(){let el=document.getElementById('loanList');if(!db.vehicles.length){el.innerHTML='<div class="empty">पहले गाड़ी रजिस्टर करें।</div>';return}
+ el.innerHTML=`<div class="table-wrap"><table><thead><tr><th>गाड़ी</th><th>लोन मंजूर</th><th>लोन मिला</th><th>EMI</th><th>Principal चुकाया (दर्ज)</th><th>अनुमानित बाकी Principal</th></tr></thead><tbody>${db.vehicles.map(v=>{let principal=sum(db.entries.filter(e=>e.vehicleId===v.id&&e.kind==='principal'),e=>+e.amount);let bal=Math.max(0,(+v.loanDisbursed||0)-principal);return `<tr><td><b>${esc(v.name)}</b><div class="small">${esc(v.reg||v.type)}</div></td><td>${money(v.loanApproved)}</td><td>${money(v.loanDisbursed)}</td><td>${money(v.emi)}</td><td>${money(principal)}</td><td><b>${money(bal)}</b></td></tr>`}).join('')}</tbody></table></div>`
+}
+function periodEntries(){let p=document.getElementById('reportPeriod').value;let now=new Date();return db.entries.filter(e=>{if(p==='all')return true;if(!e.date)return false;let d=new Date(e.date+'T00:00:00');return p==='month'?d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth():d.getFullYear()===now.getFullYear()})}
+function renderReports(){let es=periodEntries(),inc=totalIncome(es),op=operatingExpense(es),int=interestExpense(es),pr=profit(es),payments=sum(es.filter(cashOut),e=>+e.amount);
+ let ms=[['कमाई',inc],['ऑपरेटिंग खर्च',op],['ब्याज',int],['अनुमानित मुनाफा',pr],['नकदी भुगतान',payments]];document.getElementById('reportMetrics').innerHTML=ms.map((m,i)=>`<div class="card metric"><div class="label">${m[0]}</div><div class="value ${i===3?(pr>=0?'positive':'negative'):''}">${money(m[1])}</div></div>`).join('');
+ let kinds=[...new Set(es.map(e=>e.kind))];document.getElementById('reportBreakdown').innerHTML=kinds.length?`<div class="table-wrap"><table><thead><tr><th>प्रकार</th><th>कुल रकम</th><th>एंट्री</th></tr></thead><tbody>${kinds.map(k=>`<tr><td>${entryKindName(k)}</td><td>${money(sum(es.filter(e=>e.kind===k),e=>+e.amount))}</td><td>${es.filter(e=>e.kind===k).length}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">इस अवधि में कोई एंट्री नहीं।</div>';
+ document.getElementById('acquisitionReport').innerHTML=db.vehicles.length?`<div class="table-wrap"><table><thead><tr><th>गाड़ी</th><th>बेस कीमत</th><th>शुरुआती खर्च</th><th>कुल खरीद लागत</th><th>लोन मिला</th><th>अपनी रकम का अनुमान*</th></tr></thead><tbody>${db.vehicles.map(v=>`<tr><td>${esc(v.name)}</td><td>${money(v.price)}</td><td>${money(v.initial)}</td><td>${money(acquisition(v))}</td><td>${money(v.loanDisbursed)}</td><td>${money(cashInvested(v))}</td></tr>`).join('')}</tbody></table></div><p class="small">*अपनी रकम का अनुमान = दर्ज खरीद लागत − वास्तव में मिला लोन। अलग से दिए गए EMI/अन्य भुगतान इसमें शामिल नहीं हैं।</p>`:'<div class="empty">कोई गाड़ी नहीं।</div>'
+}
+function renderAll(){renderVehicleSelect();renderVehicles();renderEntries();renderDashboard();renderLoans();renderReports()}
+function exportData(){let blob=new Blob([JSON.stringify({app:'Fleet Manager',version:'0.1',exportedAt:new Date().toISOString(),data:db},null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fleet-manager-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast('बैकअप डाउनलोड हो रहा है')}
+function importData(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let o=JSON.parse(r.result),d=o.data||o;if(!Array.isArray(d.vehicles)||!Array.isArray(d.entries))throw Error('bad');if(!confirm('मौजूदा डेटा की जगह बैकअप डेटा लोड करें? पहले बैकअप बना लें।'))return;db=d;saveDB();toast('बैकअप लोड हो गया')}catch(e){alert('यह सही Fleet Manager बैकअप फाइल नहीं है।')}ev.target.value=''};r.readAsText(f)}
+function clearData(){if(confirm('क्या आप पक्का सारा डेटा मिटाना चाहते हैं? यह वापस नहीं आएगा जब तक बैकअप न हो।')){db={vehicles:[],entries:[]};saveDB();toast('डेटा मिटा दिया गया')}}
+document.querySelector('#entryForm [name=date]').value=new Date().toISOString().slice(0,10);
+renderAll();
+</script>
+</body>
+</html>
